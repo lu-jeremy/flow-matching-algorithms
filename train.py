@@ -59,7 +59,7 @@ def train(
             total_loss += loss.detach().cpu().item()
 
             # if i % display_train_freq == display_train_freq - 1:
-        avg_loss = total_loss / display_train_freq
+        avg_loss = total_loss / len(train_loader)
         agg_train_loss.append(avg_loss)
 
         if epoch % display_val_freq == 0:
@@ -78,7 +78,7 @@ def train(
 
                     val_loss = torch.pow(model([x_t, t]) - u_t, 2).mean()
                     total_val_loss += val_loss.detach().cpu().item()
-
+            
             avg_val_loss = total_val_loss / len(val_loader)
             agg_val_loss.append(avg_val_loss)
 
@@ -113,8 +113,7 @@ def sample(
             x_0 = torch.rand(size=(1, num_channels, *size))
             time_traj = torch.linspace(0, 1, n_steps)
 
-            # Euler's method: assume that each time t applies to the whole batch
-            sol = odeint(func=ode_func, y0=x_0, t=time_traj, rtol=1e-4, atol=1e-4, method=ode_method)             
+            sol = odeint(func=ode_func, y0=x_0, t=time_traj, atol=1e-4, rtol=1e-4, method=ode_method)             
             sol = (sol - sol.min()) / (sol.max() - sol.min())
 
             if display_plot:
@@ -227,15 +226,15 @@ if __name__ == '__main__':
             model = UNetModel(
                 dim=(num_channels, *img_reshape_size),
                 num_res_blocks=2,
-                num_channels=128,
+                num_channels=32,
                 channel_mult=[1, 2, 2, 2],
                 num_heads=4,
                 num_head_channels=64,
                 attention_resolutions="16",
                 dropout=0.1,
+                class_cond=False,
                 sigma=sigma_min,
             ).to(device)
-        
 
     if not os.path.isfile(model_path):
         from torch.utils.data import DataLoader
@@ -289,5 +288,5 @@ if __name__ == '__main__':
         display_plot=True,
     )
 
-    fid.compute_fid(gen=sample, dataset_name='cifar10', dataset_res=img_reshape_size[0], batch_size=1024)
-
+    # score = fid.compute_fid(gen=sample, dataset_name='cifar10', dataset_res=img_reshape_size[0], batch_size=1024, model_name="clip_vit_b_32")
+    # print(f"FID: {score}")
