@@ -1,0 +1,18 @@
+{
+    "training": true,
+    "dataset_type": "cifar10",
+    "model": "unet",
+    "epochs": 1,
+    "learning_rate": 1e-2,
+    "batch_size": 128,
+    "num_workers": 8,
+    "inference_steps": 10,
+    "sigma_min": 0.1,
+    "ode_method": "dopri5",
+    "display_train_freq": 20,
+    "display_val_freq": 1,
+    "model_path": "./model.pt",
+    "img_reshape_size": [32, 32],
+    "train_val_split": [0.8, 0.2],
+    "num_samples": 1
+}
