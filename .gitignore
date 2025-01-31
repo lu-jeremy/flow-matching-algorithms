@@ -1,5 +1,0 @@
-data
-ILSVRC2012
-model.pt
-./*.png
-./.gitignore
