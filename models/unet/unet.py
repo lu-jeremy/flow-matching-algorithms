@@ -403,7 +403,6 @@ class UNetModel(nn.Module):
         out_channels,
         num_res_blocks,
         attention_resolutions,
-        sigma,
         dropout=0,
         channel_mult=(1, 2, 4, 8),
         conv_resample=True,
@@ -584,19 +583,6 @@ class UNetModel(nn.Module):
             nn.SiLU(),
             zero_module(conv_nd(dims, input_ch, out_channels, 3, padding=1)),
         )
-
-        self.sigma = sigma
-
-    def sample_path(self, x_0, x_1, t):
-        # dependent on user input
-        if len(t.size()) != len(x_1.size()):
-            t = t[:, None, None].expand(x_1.shape)
-
-        # \mu_{t} = tx_{1}, \sigma_{t} = 1 - (1 - \sigma_{\min})t
-        x_t = (1. - (1. - self.sigma) * t) * x_0 + t * x_1
-        target = (x_1 - (1. - self.sigma) * x_t) / (1. - (1. - self.sigma) * t)
-
-        return x_t, target
 
     def convert_to_fp16(self):
         """Convert the torso of the model to float16."""
@@ -876,7 +862,6 @@ class UNetModelWrapper(UNetModel):
         dim,
         num_channels,
         num_res_blocks,
-        sigma,
         channel_mult=None,
         learn_sigma=False,
         class_cond=False,
@@ -922,7 +907,6 @@ class UNetModelWrapper(UNetModel):
             model_channels=num_channels,
             out_channels=(dim[0] if not learn_sigma else dim[0] * 2),
             num_res_blocks=num_res_blocks,
-            sigma=sigma,
             attention_resolutions=tuple(attention_ds),
             dropout=dropout,
             channel_mult=channel_mult,

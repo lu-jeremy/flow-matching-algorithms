@@ -20,7 +20,7 @@ def display_results(losses: dict):
 
     # plt.axis('off')
     plt.show()
-
+    
 
 def verify_image(dataloader):
         def plot_img(img):
