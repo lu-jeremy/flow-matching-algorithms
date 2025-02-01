@@ -13,15 +13,14 @@ class MLP(nn.Module):
             h_dim: int = 64,
             enable_time_embed: bool = True,
             num_hidden: int = 2,
-            time_dim: int = 1,
+            out_time_dim: int = 1,
     ):
         
         super().__init__()
 
         # keep in mind that batch dimensions are implicit, and will heavily impact training time
         self.in_dim = in_dim
-        # self.out_time_dim = time_dim
-        self.out_time_dim = in_dim
+        self.out_time_dim = out_time_dim
         self.h_dim = h_dim
         self.num_hidden = num_hidden
         self.vgg_out_dim = 1000
@@ -67,7 +66,6 @@ class MLP(nn.Module):
         x, t = inputs
         size = x.size()
 
-        # VGG19 for RGB embeddings
         if self.num_channels == 3:
             x = self.vgg19(x)
             x = self.linear_probe(x)
@@ -75,16 +73,19 @@ class MLP(nn.Module):
         x = x.view(-1, self.in_dim)
 
         if self.time_embedding:
-            t = self.time_embedding(t).view(-1, self.in_dim)
+            t = self.time_embedding(t)
+            
+            # in the case of 1 item batch
+            if len(t.size()) <= 1:
+                t = t.unsqueeze(0)
 
         # ODE solver only allows 1D time trajectory inputs
         t = t.expand(len(x), -1)
-
+    
         if t.dim() <= 1:
             t = t.unsqueeze(-1)
         
-        # concatenate works better
-        # x = self.input_blocks(x + t)
+        # concatenate works better than add
         x = self.input_blocks(torch.cat((x, t), dim=-1))
 
         for module in self.hidden_blocks:
@@ -116,7 +117,7 @@ class Path:
             x_t = (1. - (1. - self.sigma) * t) * torch.randn_like(x_1) + t * x_1
             target = (x_1 - (1. - self.sigma) * x_t) / (1. - (1. - self.sigma) * t)
         elif self.path_type == 'iCFM':
-            #  + self.sigma * torch.randn_like(x_1)
+            # self.sigma * torch.randn_like(x_1) is not necessary here for moons
             x_t = (1. - t) * x_0 + t * x_1
             target = x_1 - x_0
 

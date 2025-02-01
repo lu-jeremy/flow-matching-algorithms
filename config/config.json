@@ -1,6 +1,7 @@
 {
     "training": true,
-    "dataset_type": "mnist",
+    "load_checkpoint": false,
+    "dataset_type": "cifar10",
     "data_config": {
         "moons": {
             "model": "mlp",
@@ -19,34 +20,50 @@
             "num_samples": 1,
             "scheduler_type": null,
             "path_type": "iCFM",
-            "progress_bar": true
+            "progress_bar": true,
+            "display_plot": "2d",
+            "model_config": {
+                "mlp_hidden_dim": 64,
+                "enable_time_embed": true,
+                "num_hidden_layers": 2,
+                "out_time_dim": 1
+            }
         },
         "mnist": {
             "model": "mlp",
-            "epochs": 20,
+            "epochs": 40,
             "learning_rate": 1e-3,
-            "batch_size": 128,
+            "batch_size": 1024,
             "num_workers": 8,
-            "inference_steps": 10,
+            "inference_steps": 1000,
             "sigma_min": 0.1,
             "ode_method": "dopri5",
-            "display_train_freq": 20,
+            "display_train_freq": 200,
             "display_val_freq": 1,
             "model_path": "./model_mnist.pt",
             "img_reshape_size": [32, 32],
             "train_val_split": [0.8, 0.2],
-            "num_samples": 1,
-            "scheduler_type": "cosine_annealing",
+            "num_samples": 10,
+            "scheduler_type": null,
             "path_type": "CFM",
-            "progress_bar": true
+            "progress_bar": true,
+            "display_plot": "",
+            "model_config": {
+                "mlp_hidden_dim": 512,
+                "enable_time_embed": true,
+                "num_hidden_layers": 8,
+                "out_time_dim": 1,
+                "num_res_blocks": 1,
+                "num_channels": 32
+            }
         },
         "cifar10": {
             "model": "unet",
-            "epochs": 20,
+            "epochs": 1,
             "learning_rate": 1e-3,
             "batch_size": 128,
-            "num_workers": 8,
-            "inference_steps": 10,
+            "num_workers": 4,
+            "inference_steps": 20,
             "sigma_min": 0.1,
             "ode_method": "dopri5",
             "display_train_freq": 20,
@@ -54,10 +71,24 @@
             "model_path": "./model_cifar10.pt",
             "img_reshape_size": [32, 32],
             "train_val_split": [0.8, 0.2],
-            "num_samples": 1,
-            "scheduler_type": "cosine_annealing",
-            "path_type": "CFM",
-            "progress_bar": true
+            "num_samples": 10,
+            "scheduler_type": null,
+            "path_type": "iCFM",
+            "progress_bar": true,
+            "display_plot": "",
+            "model_config": {
+                "mlp_hidden_dim": 512,
+                "enable_time_embed": true,
+                "num_hidden_layers": 8,
+                "out_time_dim": 1,
+                "num_res_blocks": 2,
+                "num_channels": 128,
+                "channel_mult": [1, 2, 2, 2],
+                "num_heads": 4,
+                "num_head_channels": 64,
+                "attention_resolutions": "16",
+                "dropout": 0.1
+            }
         }
     }
     
