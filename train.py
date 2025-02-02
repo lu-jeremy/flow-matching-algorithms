@@ -342,29 +342,9 @@ if __name__ == '__main__':
 
         from torch.utils.data import DataLoader
         
-        train_loader = DataLoader(
-            train_set,
-            batch_size=batch_size,
-            shuffle=True,
-            num_workers=num_workers,
-            pin_memory=True
-        )
-
-        val_loader = DataLoader(
-            val_set,
-            batch_size=batch_size,
-            shuffle=True,
-            num_workers=num_workers,
-            pin_memory=True
-        )
-
-        test_loader = DataLoader(
-            test_set,
-            batch_size=batch_size,
-            shuffle=True,
-            num_workers=num_workers,
-            pin_memory=True
-        )
+        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
+        val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
+        test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
 
         # x_{t} ~ p_{t}(x_{t} | x_{1})
         path = Path(sigma=sigma_min, path_type=path_type)
