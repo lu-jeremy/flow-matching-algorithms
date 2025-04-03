@@ -1,15 +1,18 @@
-# Flow Matching: Algorithms
+# 🔄 Flow Matching: Algorithms  
+*A compilation of modern stochastic flow matching models.*
 
-A compilation of modern stochastic flow matching models.
+## 🚀 Implementations  
+- [ ] **Diffusion Schrödinger Bridge Matching**  
+- [ ] **Generalized Schrödinger Bridge Matching**  
+- [x] **Conditional Flow Matching** ✅  
+- [x] **Independent Coupling Flow Matching** ✅  
 
-# Implementations:
-- [ ] Diffusion Schrödinger Bridge Matching
-- [ ] Generalized Schrödinger Bridge Matching
-- [x] Conditional Flow Matching
-- [x] Independent Coupling Flow Matching
+## 📚 References  
 
-# References:
-
+### 📖 Generalized Schrödinger Bridge Matching  
+**Liu et al. (2024)** - *ICLR 2024*  
+🔗 [Paper Link](https://openreview.net/forum?id=SoismgeX7z)  
+```bibtex
 @inproceedings{
   liu2024generalized,
   title={Generalized Schr\"odinger Bridge Matching},
@@ -47,3 +50,4 @@ A compilation of modern stochastic flow matching models.
   url={https://openreview.net/forum?id=CD9Snc73AW},
   note={Expert Certification}
 }
+```
