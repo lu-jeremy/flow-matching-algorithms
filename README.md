@@ -21,7 +21,12 @@
   year={2024},
   url={https://openreview.net/forum?id=SoismgeX7z}
 }
+```
 
+### 📖 Diffusion Schrödinger Bridge Matching  
+**Shi et al. (2023)** - *NeurIPS 2023*  
+🔗 [Paper Link](https://openreview.net/forum?id=qy07OHsJT5)  
+```
 @inproceedings{
   shi2023diffusion,
   title={Diffusion Schr\"odinger Bridge Matching},
@@ -30,7 +35,13 @@
   year={2023},
   url={https://openreview.net/forum?id=qy07OHsJT5}
 }
+```
 
+
+### 📖 Flow Matching for Generative Modeling  
+**Lipman et al. (2023)** - *ICLR 2023*  
+🔗 [Paper Link](https://openreview.net/forum?id=PqvMRDCJT9t)
+```
 @inproceedings{
   lipman2023flow,
   title={Flow Matching for Generative Modeling},
@@ -39,7 +50,12 @@
   year={2023},
   url={https://openreview.net/forum?id=PqvMRDCJT9t}
 }
+```
 
+### 📖 Improving and Generalizing Flow-Based Generative Models  
+**Tong et al. (2024)** - *TMLR 2024*  
+🔗 [Paper Link](https://openreview.net/forum?id=CD9Snc73AW)
+```
 @article{
   tong2024improving,
   title={Improving and generalizing flow-based generative models with minibatch optimal transport},
