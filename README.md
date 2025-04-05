@@ -26,7 +26,7 @@
 ### 📖 Diffusion Schrödinger Bridge Matching  
 **Shi et al. (2023)** - *NeurIPS 2023*  
 🔗 [Paper Link](https://openreview.net/forum?id=qy07OHsJT5)  
-```
+```bibtex
 @inproceedings{
   shi2023diffusion,
   title={Diffusion Schr\"odinger Bridge Matching},
@@ -41,7 +41,7 @@
 ### 📖 Flow Matching for Generative Modeling  
 **Lipman et al. (2023)** - *ICLR 2023*  
 🔗 [Paper Link](https://openreview.net/forum?id=PqvMRDCJT9t)
-```
+```bibtex
 @inproceedings{
   lipman2023flow,
   title={Flow Matching for Generative Modeling},
@@ -55,7 +55,7 @@
 ### 📖 Improving and Generalizing Flow-Based Generative Models  
 **Tong et al. (2024)** - *TMLR 2024*  
 🔗 [Paper Link](https://openreview.net/forum?id=CD9Snc73AW)
-```
+```bibtex
 @article{
   tong2024improving,
   title={Improving and generalizing flow-based generative models with minibatch optimal transport},
