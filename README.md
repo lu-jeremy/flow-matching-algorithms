@@ -1,5 +1,5 @@
 # 🔄 Flow Matching: Algorithms  
-*A compilation of modern stochastic flow matching models.*
+*A compilation of modern stochastic flow matching models with CUDA-fused kernel optimizations.*
 
 ## 🚀 Implementations  
 - [ ] **Diffusion Schrödinger Bridge Matching**  
