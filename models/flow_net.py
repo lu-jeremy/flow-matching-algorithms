@@ -117,8 +117,7 @@ class Path:
             x_t = (1. - (1. - self.sigma) * t) * torch.randn_like(x_1) + t * x_1
             target = (x_1 - (1. - self.sigma) * x_t) / (1. - (1. - self.sigma) * t)
         elif self.path_type == 'iCFM':
-            # self.sigma * torch.randn_like(x_1) is not necessary here for moons
-            x_t = (1. - t) * x_0 + t * x_1
+            x_t = (1. - t) * x_0 + t * x_1 + self.sigma * torch.randn_like(x_1)
             target = x_1 - x_0
 
         return x_t, target

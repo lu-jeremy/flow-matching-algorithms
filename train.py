@@ -3,7 +3,7 @@ import torch
 from torchvision import transforms
 from torchdiffeq import odeint
 from typing import List, Tuple, Union
-from tqdm import tqdm
+from tqdm import trange, tqdm
 import os
 import argparse
 from cleanfid import fid
@@ -17,7 +17,6 @@ from models import MLP, load_config, display_results, Path
 from models import UNetModel
 
 sys.setrecursionlimit(1500)
-
 
 def train(
         model: torch.nn.Module,
@@ -40,88 +39,94 @@ def train(
     """
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
     if scheduler_type == 'cosine_annealing':
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=0.0)
-        # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
+    elif scheduler_type == 'lambda':
+        scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda x: min(x, 5000) / 5000)
 
     agg_train_loss = []
     agg_val_loss = []
 
     best_loss = float('inf')
 
-    for epoch in range(epochs):
-        total_val_loss = 0
-        total_loss = 0
+    with trange(epochs, dynamic_ncols=True) as epoch_pbar:
+        for epoch in epoch_pbar:
+            epoch_pbar.set_description(f"Epoch {epoch + 1}/{epochs}")
 
-        if progress_bar:
-            train_loader = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{epochs}", position=0, leave=True)
+            total_val_loss = 0
+            total_loss = 0
 
-        for i, batch in enumerate(train_loader):
-            # sample training data ~ p_1(x_1)
-            x_1, _ = batch
-            x_1 = x_1.to(device)
+            with tqdm(train_loader, dynamic_ncols=True) as batch_pbar:
+            # train_loader = tqdm(, desc=, position=0, leave=True)
 
-            # t ~ U[0, 1]
-            t = torch.rand(size=(len(x_1), 1), device=device)
-            
-            # x_{0} ~ p_{0}(x_{0}; 0, I)
-            x_0 = torch.randn_like(x_1, device=device)
-
-            # x_{t} ~ p_{t}(x_{t}; tx_{1}, (1 - (1 - \sigma_{\min})*t)I)
-            x_t, u_t = path.sample_path(x_0=x_0, x_1=x_1, t=t)
-            
-            optimizer.zero_grad()
-
-            loss = torch.pow(model([x_t, t]) - u_t, 2).mean()
-            loss.backward()
-
-            torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
-
-            optimizer.step()
-
-            total_loss += loss.detach().cpu().item()
-
-            # if i % display_train_freq == display_train_freq - 1:
-
-        avg_loss = total_loss / len(train_loader)
-        # record average loss per display_train_freq batches
-        # avg_loss = total_loss / display_train_freq
-        agg_train_loss.append(avg_loss)
-
-        print(f'\nBatch {i + 1}/{len(train_loader)}\tTrain Loss: {avg_loss:.3e}')
-
-        if epoch % display_val_freq == 0:
-            with torch.no_grad():
-                for val_batch in val_loader:
-                    x_1, _ = val_batch
+                for i, batch in enumerate(batch_pbar):
+                    # sample training data ~ p_1(x_1)
+                    x_1, _ = batch
                     x_1 = x_1.to(device)
 
-                    if len(x_1) != batch_size:
-                        continue
-
-                    x_0 = torch.randn_like(x_1).to(device)
+                    # t ~ U[0, 1]
                     t = torch.rand(size=(len(x_1), 1), device=device)
+                    
+                    # x_{0} ~ p_{0}(x_{0}; 0, I)
+                    x_0 = torch.randn_like(x_1, device=device)
 
+                    # x_{t} ~ p_{t}(x_{t}; tx_{1}, (1 - (1 - \sigma_{\min})*t)I)
                     x_t, u_t = path.sample_path(x_0=x_0, x_1=x_1, t=t)
+                    
+                    optimizer.zero_grad()
 
-                    val_loss = torch.pow(model([x_t, t]) - u_t, 2).mean()
-                    total_val_loss += val_loss.detach().cpu().item()
-            
-            avg_val_loss = total_val_loss / len(val_loader)
-            agg_val_loss.append(avg_val_loss)
+                    loss = torch.pow(model([x_t, t]) - u_t, 2).mean()
 
-        print(f'Validation loss: {avg_val_loss:.3e}')
+                    loss.backward()
 
-        if scheduler_type is not None:
-            scheduler.step()
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
 
-    display_results({'Training' : agg_train_loss, 'Validation' : agg_val_loss})
-    
-    # checkpointing based on loss
-    if avg_val_loss < best_loss:
-        best_loss = avg_val_loss
-        torch.save(model.state_dict(), os.path.splitext(model_path)[0] + f'_epoch{epoch}.pt')
+                    optimizer.step()
 
+                    total_loss += loss.detach().cpu().item()
+
+                    # if i % display_train_freq == display_train_freq - 1:
+
+                avg_loss = total_loss / len(train_loader)
+                # record average loss per display_train_freq batches
+                # avg_loss = total_loss / display_train_freq
+                agg_train_loss.append(avg_loss)
+
+                print(f'\nBatch {i + 1}/{len(train_loader)}\tTrain Loss: {avg_loss:.3e}')
+
+                if epoch % display_val_freq == 0:
+                    with torch.no_grad():
+                        for val_batch in val_loader:
+                            x_1, _ = val_batch
+                            x_1 = x_1.to(device)
+
+                            if len(x_1) != batch_size:
+                                continue
+
+                            x_0 = torch.randn_like(x_1).to(device)
+                            t = torch.rand(size=(len(x_1), 1), device=device)
+
+                            x_t, u_t = path.sample_path(x_0=x_0, x_1=x_1, t=t)
+
+                            val_loss = torch.pow(model([x_t, t]) - u_t, 2).mean()
+                            total_val_loss += val_loss.detach().cpu().item()
+                    
+                    avg_val_loss = total_val_loss / len(val_loader)
+                    agg_val_loss.append(avg_val_loss)
+
+                print(f'Validation loss: {avg_val_loss:.3e}')
+
+                if scheduler_type is not None:
+                    scheduler.step()
+
+            # checkpointing based on loss
+            if avg_val_loss < best_loss:
+                best_loss = avg_val_loss
+                torch.save(model.state_dict(), os.path.splitext(model_path)[0] + f'.pt')
+
+        display_results({'Training' : agg_train_loss, 'Validation' : agg_val_loss})
+        
 
 def sample(
         model: torch.nn.Module, 
@@ -129,6 +134,7 @@ def sample(
         num_channels: int, 
         size: Union[List, Tuple, torch.Size, int], 
         ode_method: str,
+        device: torch.device,
         num_samples: int = 1,
         display_plot: str = 'img',
     ):
@@ -146,8 +152,8 @@ def sample(
     with torch.no_grad():
         for s in range(num_samples):
             # size: B x C x H x W
-            x_0 = torch.randn(size=(1, num_channels, *size))
-            time_traj = torch.linspace(0, 1, n_steps)
+            x_0 = torch.randn(size=(1, num_channels, *size), device=device)
+            time_traj = torch.linspace(0, 1, n_steps, device=device)
 
             sol = odeint(func=ode_func, y0=x_0, t=time_traj, method=ode_method)
 
@@ -175,6 +181,7 @@ def sample(
                     c_ax.set_aspect('equal')
                     c_ax.set_title(f't: {time_traj[i]:.2f}')
             else:
+                sol = sol.detach().cpu()
                 sol = (sol - sol.min()) / (sol.max() - sol.min())
                 axs[s].imshow(sol[-1, 0, :, :, :].permute(1, 2, 0).numpy())
                 axs[s].set_aspect('equal')
@@ -239,7 +246,6 @@ if __name__ == '__main__':
     # normalize on image channels depending on dataset
     transform = transforms.Compose([
         transforms.ToTensor(),
-        *([transforms.Resize(img_reshape_size)] if img_reshape_size is not None else []),
         transforms.RandomHorizontalFlip(),
     ])
 
@@ -260,7 +266,8 @@ if __name__ == '__main__':
 
     elif dataset_type == 'mnist':
         transform.transforms.append(transforms.Normalize(mean=0.5, std=0.5))
-        
+        transform.transforms.append(*[transforms.Resize(img_reshape_size)] if img_reshape_size is not None else [])
+
         from torchvision.datasets import MNIST
 
         MNIST.resources = [
@@ -350,7 +357,7 @@ if __name__ == '__main__':
         path = Path(sigma=sigma_min, path_type=path_type)
         train(
             model=model, 
-            train_loader=train_loader, 
+            train_loader=train_loader,
             val_loader=val_loader,
             epochs=epochs,
             lr=lr,
@@ -368,11 +375,12 @@ if __name__ == '__main__':
         model.eval()
 
     sample(
-        model=model.cpu(),
+        model=model,
         n_steps=n_steps,
         num_channels=rgb_channels,
         size=size,
         ode_method=ode_method,
+        device=device,
         num_samples=num_samples,
         display_plot=display_plot,
     )
