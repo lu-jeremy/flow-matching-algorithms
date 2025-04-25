@@ -2,6 +2,8 @@
 *A compilation of modern stochastic flow matching models with CUDA-fused kernel optimizations.*
 
 ## 🚀 Implementations  
+- [ ] **Adjoint Matching**  
+- [ ] **Stochastic Optimal Control Matching**  
 - [ ] **Diffusion Schrödinger Bridge Matching**  
 - [ ] **Generalized Schrödinger Bridge Matching**  
 - [x] **Conditional Flow Matching** ✅  
